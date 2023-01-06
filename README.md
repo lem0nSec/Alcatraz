@@ -22,10 +22,14 @@ A detailed explanation of how this code works can be found in the wiki page of t
 
 ## Characteristics
 
-:pushpin: Dinamically resolves Kernel32.dll APIs and creates a 'function table' in memory;
+:white_check_mark: Dinamically resolves Kernel32.dll APIs and creates a 'function table' in memory;
 
-:pushpin: Searches for, proactively identifies and targets 64bit .exe files;
+:white_check_mark: Searches for, proactively identifies and targets 64bit .exe files;
 
-:pushpin: Can recursively search for files (Directory_mode / File_mode);
+:white_check_mark: Can recursively search for files (Directory_mode / File_mode);
 
-:pushpin: Self-replicates past the target entrypoint (.text section).
+:white_check_mark: Self-replicates past the target entrypoint (.text section);
+
+:x: Does not preserve the target file code;
+
+:x: Still crashes on some files (I will fix this when I have time).
