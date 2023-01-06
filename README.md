@@ -6,7 +6,7 @@
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Disclaimer
+## Disclaimer
 
 This code must not be used to cause damage. The author is not responsible for its usage. The goal of this repository is to explain how a basic PE-file infector works, how it moves throughout the system, as well as how it identifies and self-replicates into executable images.
 
@@ -14,12 +14,12 @@ This code must not be used to cause damage. The author is not responsible for it
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Wiki
-A detailed explanation of how this code works can be found in the wiki page of this repository at: TODO
+## Wiki
+A detailed explanation of how this code works can be found in the wiki page of this repository. **THE WIKI IS STILL UNDER DEVELOPMENT.**
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Characteristics
+## Characteristics
 
 :pushpin: Dinamically resolves Kernel32.dll APIs and stores them in memory;
 
