@@ -1,4 +1,5 @@
 # Alcatraz
+![](https://img.shields.io/badge/NASM-x64-brown) ![](https://img.shields.io/badge/GoLink-1.0.4.2-brightgreen)
 
 :dart: Alcatraz is a basic **self-replicating Virus** I developed for educational and academic purposes. 
 
