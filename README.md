@@ -22,7 +22,7 @@ A detailed explanation of how this code works can be found in the wiki page of t
 
 ## Characteristics
 
-:pushpin: Dinamically resolves Kernel32.dll APIs and stores them in memory;
+:pushpin: Dinamically resolves Kernel32.dll APIs and creates a 'function table' in memory;
 
 :pushpin: Searches for, proactively identifies and targets 64bit .exe files;
 
