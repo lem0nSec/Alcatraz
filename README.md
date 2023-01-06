@@ -14,6 +14,11 @@ This code must not be used to cause damage. The author is not responsible for it
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# Wiki
+A detailed explanation of how this code works can be found in the wiki page of this repository at: TODO
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Characteristics
 
 :pushpin: Dinamically resolves Kernel32.dll APIs and stores them in memory;
