@@ -14,7 +14,7 @@
 
 ## DISCLAIMER
 
-This code has been developed for educational and academic purposes only. The author is not responsible for any unauthorized use of this code or damage due to its usage. The author strongly discourages launching this program for reasons other than academic.
+**This code has been developed for educational and academic purposes only. The author is not responsible for any unauthorized use of this code or damage caused by its usage. The author strongly discourages launching this program for reasons other than academic.**
 
 
 
