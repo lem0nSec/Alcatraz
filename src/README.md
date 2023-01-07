@@ -8,7 +8,7 @@
     - [2.2.2 Storing / restoring 'directory state'](#Storing-and-restoring-Directory_state)
   - [2.3 Identifying a valid 64bit executable image](#Identifying-a-valid-64bit-executable-image)
   - [2.4 The Infection Process](#The-Infection-Process)
-- [3. The Analyst Perspective](#The-Analyst-Perspective)
+- [3. The Analyst Perspective](#Looking-into-an-Infected-File)
 <a name="headers"/>
 
 
