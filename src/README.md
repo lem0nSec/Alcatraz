@@ -172,7 +172,7 @@ Calling FindFirstFileA and FindNextFileA is the easiest part. In my opinion, mak
 
 
 
-#### Directory\_mode vs File\_mode
+#### Directory_mode vs File_mode
 
 Alcatraz can enumerate the content of directories in either 'Directory\_mode' or 'File\_mode', depending on whether it is searching for a PE executable or a directory to open up. The register r12 holds the value related to this. If r12 is set to 0, then directory\_mode is disabled. If r12 is set to 1, then the program is searching for directories. In practical terms, the program first enumerates all files in the current path (r12 set to 0). When FindNextFileA returns error (0), it means that all files have been checked and directory\_mode can be enabled.
 
