@@ -5,10 +5,10 @@
   - [2.1 Creating a Kernel32 Address Table](#Creating-a-Kernel32-Address-Table)
   - [2.2 Searching for Files](#Searching-for-Files)
     - [2.2.1 Directory_mode vs File_mode](#Directory_mode-vs-File_mode)
-    - [2.2.2 Storing / restoring 'directory state'](#Storing-and-restoring-Directory_state)
+    - [2.2.2 Storing / restoring Directory_state](#Storing-and-restoring-Directory_state)
   - [2.3 Identifying a valid 64bit executable image](#Identifying-a-valid-64bit-executable-image)
   - [2.4 The Infection Process](#The-Infection-Process)
-- [3. The Analyst Perspective](#Looking-into-an-Infected-File)
+- [3. Looking into an Infected File](#Looking-into-an-Infected-File)
 <a name="headers"/>
 
 
