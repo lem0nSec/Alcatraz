@@ -16,7 +16,7 @@ This code must not be used to cause damage. The author is not responsible for it
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Wiki
-A detailed explanation of how this code works can be found in the wiki page of this repository. **THE WIKI IS STILL UNDER DEVELOPMENT.**
+A detailed explanation of how this code works can be found in the [src](https://github.com/lem0nSec/Alcatraz/tree/main/src) directory.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
