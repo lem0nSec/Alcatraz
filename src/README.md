@@ -62,14 +62,14 @@ What I name Kernel32AddressTable in the code is an allocation in the heap memory
 
 
 
-![Building a custom Kernel32AddressTable](pictures/kernel32addresstable_small.png)
+![Building a custom Kernel32AddressTable](../pictures/kernel32addresstable_small.png)
 **Figure 1. Building a custom Kernel32 Address Table**
 
 
 
 
 
-![Calling WINAPI from Kernel32AddressTable](pictures/function_call.png)
+![Calling WINAPI from Kernel32AddressTable](../pictures/function_call.png)
 **Figure 2. Calling a WINAPI from Kernel32AddressTable**
 
 
@@ -524,17 +524,19 @@ When this process is complete, the HANDLE to the file used for reading is closed
 ## 3. The Analyst Perspective
 Alcatraz is very easy to detect after compilation and linking. However, it seems AV engines do not flag infected files. In any case, the following images show what an infected file looks like. The .text section has been overwritten with nops almost entirely, and the malicious code is present in the middle of it (entrypoint). There is also the signature 'alca' at the beginning of the section.
 
-!["New .text section"](pictures/hxd2.png)
+!["New .text section"](../pictures/hxd2.png)
+
 **Figure 3. New .text section**
 
 
-!["Virus signature"](pictures/hxd1.png)
+!["Virus signature"](../pictures/hxd1.png)
+
 **Figure 4. Virus signature**
 
 
 When an infected calc.exe is loaded onto x64dbg, the entrypoint is the very first Alcatraz instruction. The code before is just a series of nops.
 
 
-!["Infected calc.exe executes Alcatraz code"](pictures/calc_entrypoint.png)
+!["Infected calc.exe executes Alcatraz code"](../pictures/calc_entrypoint.png)
 **Figure 5. Infected calc.exe executes Alcatraz code**
 
