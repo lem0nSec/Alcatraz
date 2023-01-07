@@ -433,7 +433,7 @@ Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its s
 	xor   rax, rax 
 	mov   ax, WORD [ds:rcx]
 	and   rax, 0x2000
-	cmp   rax, 0 								; check if .exe
+	cmp   rax, 0				; check if .exe
 	jne   _freeCall
 
 	<snip>
