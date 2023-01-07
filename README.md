@@ -9,9 +9,9 @@
 
 ## Disclaimer
 
-This code must not be used to cause damage. The author is not responsible for its usage or damages caused as a consequence of its usage. The goal of this repository is to explain how a basic PE-file infector works, how it moves throughout the system, as well as how it identifies and self-replicates into executable images.
+This code must not be used to cause damage. The author is not responsible for its usage or damages caused as a consequence of its usage. **The goal of this repository is to explain how a basic PE-file infector works, how it moves throughout the system, as well as how it identifies and self-replicates into executable images.**
 
-**Bear in mind that although the code may crash at some point due to the fact that it's still in TESTING phase, running Alcatraz may cause harm to your system.**
+Bear in mind that although the code may crash at some point due to the fact that it's still in TESTING phase, **running Alcatraz may cause harm to your system.**
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
