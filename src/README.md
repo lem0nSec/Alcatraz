@@ -1,14 +1,14 @@
 # Table of Contents  
 - [Disclaimer](#DISCLAIMER)  
-- [1 Introduction](#1._Introduction)  
-- [2 Explaining Alcatraz](#2._Explaining_Alcatraz)
-  - [2.1 Creating a Kernel32 Address Table](#2.1._Creating_a_Kernel32_Address_Table)
-  - [2.2 Searching for Files](#2.2._Searching_for_Files)
-    - [2.2.1 Directory\_mode vs File\_mode](#2.2.1_Directory_mode_vs_File_mode)
-    - [2.2.2 Storing / restoring 'directory state'](#2.2.2_Storing_/_restoring_'directory_state')
-  - [2.3 Identifying a valid 64bit executable image](#2.3_Identifying_a_valid_64bit_executable_image)
-  - [2.4 The Infection Process](#2.4_The_Infection_Process)
-- [3. The Analyst Perspective](#3._The_Analyst_Perspective)
+- [1 Introduction](#Introduction)  
+- [2 Explaining Alcatraz](#Explaining_Alcatraz)
+  - [2.1 Creating a Kernel32 Address Table](#Creating_a_Kernel32_Address_Table)
+  - [2.2 Searching for Files](#Searching_for_Files)
+    - [2.2.1 Directory\_mode vs File\_mode](#Directory_mode_vs_File_mode)
+    - [2.2.2 Storing / restoring 'directory state'](#Storing_/_restoring_'directory_state')
+  - [2.3 Identifying a valid 64bit executable image](#Identifying_a_valid_64bit_executable_image)
+  - [2.4 The Infection Process](#The_Infection_Process)
+- [3. The Analyst Perspective](#The_Analyst_Perspective)
 <a name="headers"/>
 
 
