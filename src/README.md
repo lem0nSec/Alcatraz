@@ -5,7 +5,7 @@
   - [2.1 Creating a Kernel32 Address Table](#Creating-a-Kernel32-Address-Table)
   - [2.2 Searching for Files](#Searching-for-Files)
     - [2.2.1 Directory_mode vs File_mode](#Directory_mode-vs-File_mode)
-    - [2.2.2 Storing / restoring 'directory state'](#Storing-/-restoring-'directory-state')
+    - [2.2.2 Storing / restoring 'directory state'](#Storing-and-restoring-Directory_state)
   - [2.3 Identifying a valid 64bit executable image](#Identifying-a-valid-64bit-executable-image)
   - [2.4 The Infection Process](#The-Infection-Process)
 - [3. The Analyst Perspective](#The-Analyst-Perspective)
@@ -268,7 +268,7 @@ With that being done, the \_changeDirectory procedure recognizes a valid directo
 With that being said, what does 'mov r11, QWORD \[ss:rsp + 104\] does'?
 
 
-#### Storing / restoring 'directory state'
+#### Storing and restoring 'Directory_state'
 
 When the program goes down a directory and finds no valid PEs or folders in it, then it goes back up. However, how does it retrieve the enumeration state of the previous directory, thus avoiding renumerating all files from the beginning? Storing the 'directory state' means storing the values used to define it. To put it simply, the enumeration of a directory depends on the parameters passed to FindFirstFileA and FindNextFileA. These parameters are a HANDLE and the WIN32\_FIND\_DATAA struct. If the programs needs to save the enumeration state for a directory, it has to store these two values somewhere so that it can remember the state as soon as the HANDLE and the WIN32\_FIND\_DATAA struct are retrieved back. Alcatraz saves this data as a QWORD pair in the heap memory. The following snippet within the \_begin procedure allocates 400 bytes in the heap, then saves the pointer on to stack at position rsp + 104. As the directory\_state for one directory is represented by two QWORDS values (HANDLE and WIN32\_FIND\_DATAA), a single directory\_state is a 16-byte value. A 400-byte allocation make sure the program is able to enumerate up to 25 directories deep and safely retrieve the related directory\_states. 
 
