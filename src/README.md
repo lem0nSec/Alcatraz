@@ -1,7 +1,7 @@
 # Table of Contents  
 - [Disclaimer](#DISCLAIMER)  
 - [1 Introduction](#Introduction)  
-- [2 Explaining Alcatraz](#Explaining%201%20Alcatraz)
+- [2 Explaining Alcatraz](##Explaining%201%20Alcatraz)
   - [2.1 Creating a Kernel32 Address Table](#Creating_a_Kernel32_Address_Table)
   - [2.2 Searching for Files](#Searching_for_Files)
     - [2.2.1 Directory_mode vs File_mode](#Directory_mode_vs_File_mode)
