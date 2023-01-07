@@ -521,7 +521,7 @@ _copyShellcode1:
 When this process is complete, the HANDLE to the file used for reading is closed and a new HANDLE is opened. This HANDLE is then passed to the WriteFile API along with the new code. The generated file overwrites the original one and execution is again passed to the \_findNextFile procedure.
 
 
-## The Analyst Perspective
+## Looking into an Infected File
 Alcatraz is very easy to detect after compilation and linking. However, it seems AV engines do not flag infected files. In any case, the following images show what an infected file looks like. The .text section has been overwritten with nops almost entirely, and the malicious code is present in the middle of it (entrypoint). There is also the signature 'alca' at the beginning of the section.
 
 !["New .text section"](../pictures/hxd2.png)
@@ -534,7 +534,7 @@ Alcatraz is very easy to detect after compilation and linking. However, it seems
 **Figure 4. Virus signature**
 
 
-When an infected calc.exe is loaded onto x64dbg, the entrypoint is the very first Alcatraz instruction. The code before is just a series of nops.
+When an infected calc.exe is loaded onto x64dbg, the entrypoint is the very first Alcatraz instruction. The rest of the section is just a series of nops.
 
 
 !["Infected calc.exe executes Alcatraz code"](../pictures/calc_entrypoint.png)
