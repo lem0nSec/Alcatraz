@@ -32,4 +32,4 @@ A detailed explanation of how this code works can be found in the wiki page of t
 
 :x: Does not preserve the target file code;
 
-:x: Still crashes on some files (I will fix this when I have time).
+:x: Still crashes on some files (I will fix this asap).
