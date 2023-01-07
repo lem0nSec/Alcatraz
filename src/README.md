@@ -18,7 +18,7 @@ This code has been developed for educational and academic purposes only. The aut
 
 
 
-## 1. Introduction
+## Introduction
 
 Win64.Alcatraz is a simple PE infector (virus - non-resident) which I developed to strenghten my Assembly programming skills, as well as the ability to manage the filesystem at usermode level. As part of this repo my goal is to explain a couple of concepts which stands from a Malware and Reverse Engineer perspectives respectively. The followings are central tenets of this repo:
 
@@ -43,13 +43,13 @@ A virus is a self-replicating malware which spreads from one file to another. It
 
 
 
-## 2. Explaining Alcatraz
+## Explaining Alcatraz
 
 Alcatraz is a basic example of Malware Virus. It spreads amongst PE executables on the same system, replacing the original code with itself. Also bear in mind that since the executable's original code is scrapped with that of the virus, its functionalities are not preserved. Again, be careful on how you use this code!
 
 
 
-### 2.1 Creating a Kernel32 Address Table
+### Creating a Kernel32 Address Table
 
 This virus code is an independent shellcode that is able to run in any environment after selfinjection. This means that functions from Kernel32.dll cannot be resolved via load-time linking. Rather, Kernel32.dll addresses have to be retrieved dinamically during execution.
 
@@ -143,7 +143,7 @@ _storeAddress_continueIncrement:
 ```
 
 
-### 2.2 Searching for Files
+### Searching for Files
 
 Since this is a very basic example of PE infector, we will use standard Kernel32 file management APIs for finding valid PEs. APIs like CreateFileA, FindFirstFileA, and FindNextFileA are what we need. A pointer to WIN32\_FIND\_DATAA struct has to be passed to FindFirstFileA as second parameter. This data structure is first allocated in the heap memory with LocalAlloc by the \_allocate\_win32\_find\_dataa\_struct procedure, then passed to the function.
 
@@ -172,7 +172,7 @@ Calling FindFirstFileA and FindNextFileA is the easiest part. In my opinion, mak
 
 
 
-#### 2.2.1 Directory\_mode vs File\_mode
+#### Directory\_mode vs File\_mode
 
 Alcatraz can enumerate the content of directories in either 'Directory\_mode' or 'File\_mode', depending on whether it is searching for a PE executable or a directory to open up. The register r12 holds the value related to this. If r12 is set to 0, then directory\_mode is disabled. If r12 is set to 1, then the program is searching for directories. In practical terms, the program first enumerates all files in the current path (r12 set to 0). When FindNextFileA returns error (0), it means that all files have been checked and directory\_mode can be enabled.
 
@@ -268,7 +268,7 @@ With that being done, the \_changeDirectory procedure recognizes a valid directo
 With that being said, what does 'mov r11, QWORD \[ss:rsp + 104\] does'?
 
 
-#### 2.2.2 Storing / restoring 'directory state'
+#### Storing / restoring 'directory state'
 
 When the program goes down a directory and finds no valid PEs or folders in it, then it goes back up. However, how does it retrieve the enumeration state of the previous directory, thus avoiding renumerating all files from the beginning? Storing the 'directory state' means storing the values used to define it. To put it simply, the enumeration of a directory depends on the parameters passed to FindFirstFileA and FindNextFileA. These parameters are a HANDLE and the WIN32\_FIND\_DATAA struct. If the programs needs to save the enumeration state for a directory, it has to store these two values somewhere so that it can remember the state as soon as the HANDLE and the WIN32\_FIND\_DATAA struct are retrieved back. Alcatraz saves this data as a QWORD pair in the heap memory. The following snippet within the \_begin procedure allocates 400 bytes in the heap, then saves the pointer on to stack at position rsp + 104. As the directory\_state for one directory is represented by two QWORDS values (HANDLE and WIN32\_FIND\_DATAA), a single directory\_state is a 16-byte value. A 400-byte allocation make sure the program is able to enumerate up to 25 directories deep and safely retrieve the related directory\_states. 
 
@@ -371,7 +371,7 @@ NB:
 - There is probably no need to consider a WIN32\_FIND\_DATAA as part of the Directory\_state. This is because it is more likely that only the HANDLE is used to keep track of the enumeration progress. A struct is just a series of bytes that gets populated.
 
 
-### 2.3 Identifying a valid 64bit executable image
+### Identifying a valid 64bit executable image
 Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its size, then it allocates a memory space in the heap where the file content is read. Clearly, the size of the allocation is equal to the size of the file. So the function will be LocalAlloc(LPTR, sizeof(file)). The program can now check if the file meets the following 64bit .exe criteria:
 
 - The first DWORD must be equal to 0x00905A4D ('MZ')
@@ -464,7 +464,7 @@ Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its s
 ```
 
 
-### 2.4 The Infection Process
+### The Infection Process
 After finding a valid .exe to inject into, Alcatraz gets a pointer to the target .text section. The first DWORD of the section is overwritten with the value 0x61636C61 ('alca'). The rest of the section is padded with nops (0x90). Then the IMAGE\_OPTIONAL\_HEADER of the target is parsed until the value of the entrypoint is found. This value is added to the base address of the target in the heap and Alcatraz copies itself past that address. As a result, when the target program is launched, it starts executing the Alcatraz code rather than its own.
 
 
@@ -521,7 +521,7 @@ _copyShellcode1:
 When this process is complete, the HANDLE to the file used for reading is closed and a new HANDLE is opened. This HANDLE is then passed to the WriteFile API along with the new code. The generated file overwrites the original one and execution is again passed to the \_findNextFile procedure.
 
 
-## 3. The Analyst Perspective
+## The Analyst Perspective
 Alcatraz is very easy to detect after compilation and linking. However, it seems AV engines do not flag infected files. In any case, the following images show what an infected file looks like. The .text section has been overwritten with nops almost entirely, and the malicious code is present in the middle of it (entrypoint). There is also the signature 'alca' at the beginning of the section.
 
 !["New .text section"](../pictures/hxd2.png)
