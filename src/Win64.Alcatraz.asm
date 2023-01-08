@@ -635,7 +635,7 @@ _returnError:
 
 _goBackDir:
 	xor 	rcx, rcx
-	lea 	rcx, [ds:rbx + 0xD9]		; rcx: '..'
+	lea 	rcx, [ds:rbx + 0xCC]		; rcx: '..'
 	call 	QWORD [ds:r15 + 80]		; SetCurrentDirectory('..')
 	cmp 	rax, 0
 	jz	_clearAndTerminate
