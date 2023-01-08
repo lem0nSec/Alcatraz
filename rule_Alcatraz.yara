@@ -10,11 +10,11 @@ rule Vir_Alcatraz: Alcatraz
         strings:
                 $signature = "alca" ascii
                 $final_pattern = { 3E 49 83 3C 03 00 75 0C 3E 4D 87 2C 03 3E 4D 87 74 03 08 C3 48 83 C0 10 EB E6 3E 49 83 3C 03 00 74 12 4D 31 ED 4D 89 EE 3E 4D 87 2C 03 3E 4D 87 74 03 08 C3 48 83 E8 10 EB E0 }
-                
+                $text_pattern = { 61 6C 63 61 90 90 90 90 90 90 90 90 90 90 90 90 }
 
 
         condition:
-                uint16(0) == 0x5A4D and ($final_pattern or ($signature at 0x2CF))
+                uint16(0) == 0x5A4D and ($final_pattern or $text_pattern or ($signature at 0x2CF))
 
 
 }
