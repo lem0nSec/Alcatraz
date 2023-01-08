@@ -30,6 +30,6 @@ A detailed explanation of the most salient parts of this code can be found in th
 
 :white_check_mark: Self-replicates past the target entrypoint (.text section);
 
-:x: The infection logic is not deterministic (some files may be unable to run Alcatraz code);
+:x: The infection logic is not deterministic (some files might be unable to run Alcatraz code);
 
 :x: Still crashes on some .dll files (I will fix this asap).
