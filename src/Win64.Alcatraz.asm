@@ -683,7 +683,7 @@ _addRax:
 
 _retrieveDirectoryData:
 	cmp 	QWORD [ds:r11 + rax], 0
-	jz 		_subRax
+	jz 	_subRax
 	
 	xor 	r13, r13
 	mov 	r14, r13
