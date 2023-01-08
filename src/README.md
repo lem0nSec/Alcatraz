@@ -8,7 +8,8 @@
     - [2.2.2 Storing / restoring Directory_state](#Storing-and-restoring-Directory_state)
   - [2.3 Identifying a valid 64bit executable image](#Identifying-a-valid-64bit-executable-image)
   - [2.4 The Infection Process](#The-Infection-Process)
-- [3. Looking into an Infected File](#Looking-into-an-Infected-File)
+- [3. Detecting Alcatraz](#Detecting-Alcatraz)
+- [4. Final Remarks](#Final-Remarks)
 <a name="headers"/>
 
 
@@ -374,14 +375,14 @@ NB:
 ### Identifying a valid 64bit executable image
 Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its size, then it allocates a memory space in the heap where the file content is read. Clearly, the size of the allocation is equal to the size of the file. So the function will be LocalAlloc(LPTR, sizeof(file)). The program can now check if the file meets the following 64bit .exe criteria:
 
-- The first DWORD must be equal to 0x00905A4D ('MZ')
+- The first WORD must be equal to 0x5A4D ('MZ')
 
 
 ```asm
 
 	<snip>
 
-	cmp   DWORD [rsi], 0x00905A4D				; check if 'MZ'
+	cmp   WORD [rsi], 0x5A4D				; check if 'MZ'
 	jne   _freeCall
 
 	<snip>
@@ -465,7 +466,7 @@ Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its s
 
 
 ### The Infection Process
-After finding a valid .exe to inject into, Alcatraz gets a pointer to the target .text section. The first DWORD of the section is overwritten with the value 0x61636C61 ('alca'). The rest of the section is padded with nops (0x90). Then the IMAGE\_OPTIONAL\_HEADER of the target is parsed until the value of the entrypoint is found. This value is added to the base address of the target in the heap and Alcatraz copies itself past that address. As a result, when the target program is launched, it starts executing the Alcatraz code rather than its own.
+After finding a valid .exe to inject into, Alcatraz gets a pointer to the target .text section. The first DWORD of the section is overwritten with the value 0x61636C61 ('alca'). The rest of the section is padded with nops (0x90). Then the IMAGE\_OPTIONAL\_HEADER of the target is parsed until the value of the entrypoint is found. This value is added to the base address of the target in the heap and Alcatraz copies itself past that address. As a result, when the target program is launched, it "allegedly" starts executing the Alcatraz code rather than its own.
 
 
 ```asm
@@ -518,25 +519,51 @@ _copyShellcode1:
 ```
 
 
-When this process is complete, the HANDLE to the file used for reading is closed and a new HANDLE is opened. This HANDLE is then passed to the WriteFile API along with the new code. The generated file overwrites the original one and execution is again passed to the \_findNextFile procedure.
+**IMPORTANT:** Tests have shown that this infection method is not really deterministic. It seems that the address of the entrypoint changes as the executable gets loaded in memory. As a result, some programs just execute nops in the .text section rather than the Alcatraz code. In any case, the infected program will not work as in its original state. This issue might be related to the code or the operating system itself. Below are two screenshots of an infected calc.exe application behaviour in Windows 11 and Windows 10 respectively. The application successfully runs Alcatraz code in Windows 11, whereas x64dbg on Windows 10 even fails at loading it (Invalid PE file).
 
 
-## Looking into an Infected File
-Alcatraz is very easy to detect after compilation and linking. However, it seems AV engines do not flag infected files. In any case, the following images show what an infected file looks like. The .text section has been overwritten with nops almost entirely, and the malicious code is present in the middle of it (entrypoint). There is also the signature 'alca' at the beginning of the section.
-
-!["New .text section"](../pictures/hxd2.png)
-
-**Figure 3. New .text section**
+![calc.exe executes Alcatraz code in Windows 11](../pictures/calc_entrypoint.png)
+**Figure 3. calc.exe executes Alcatraz code in Windows 11.**
 
 
-!["Virus signature"](../pictures/hxd1.png)
+![calc.exe failure in Windows 10](../pictures/windows10_error.png)
 
-**Figure 4. Virus signature**
-
-
-When an infected calc.exe is loaded onto x64dbg, the entrypoint is the very first Alcatraz instruction. The rest of the section is just a series of nops.
+**Figure 4. calc.exe failure in Windows 10.**
 
 
-!["Infected calc.exe executes Alcatraz code"](../pictures/calc_entrypoint.png)
-**Figure 5. Infected calc.exe executes Alcatraz code**
+Again, this issue is not actually relevant since this code is just inteded for **educating** on how Viruses may spread.
 
+After the self-replication phase is complete, the HANDLE to the file used for reading is closed and a new HANDLE is opened. This HANDLE is then passed to the WriteFile API along with the new code. The generated file overwrites the original one and execution is again passed to the \_findNextFile procedure.
+
+
+## Detecting Alcatraz
+Alcatraz is very easy by most AVs heuristic analyses. Microsoft Defender flags it with !ML suffix which stands for 'Machine Learning'. Others use the name '\[HEUR\]' to specify that detection was based on an heuristic approach. That said, using this approach is often said to leave room to false positives. That's why I tried writing a YARA rule for the very first time.
+
+Writing an effective YARA rule boils down to understanding most salient parts of the code. Those parts that make a binary stick out and that are unlikely to change. Below is a picture showing what the padded .text section looks like, along with the 'alca' signature.
+
+
+![New .text section](../pictures/hxd2.png)
+
+**Figure 5. New .text section**
+
+
+![Virus signature](../pictures/hxd1.png)
+
+**Figure 6. Virus signature**
+
+
+Writing a comprehensive rule that takes into account both the main Alcatraz binary and its victim files needs to include these characteristics. The [final YARA](https://github.com/lem0nSec/Alcatraz/blob/main/rule_Alcatraz.yara) condition is the following:
+
+
+```yara
+condition:
+                uint16(0) == 0x5A4D and ($final_pattern or $text_pattern or ($signature at 0x2CF))
+```
+
+
+0x5A4D is always present at offset 0 in any .exe file. The variable $signature indicates the string 'alca', which can be found in the main Alcatraz binary at offset 0x2CF after compilation and linking. The variable $text_pattern is the string 'alca' plus a series of nops. This can always be found in an infected file at the beginning of its .text section. Finally, the $final_pattern variable is a sequence of opcodes representing the instructon set that is responsible for storing and restoring the 'Directory_state'. Without this, the program could not search recursively.
+
+
+## Final Remarks
+Thank you very much for your interest in this repository. I hope this work can give a modest contribute to the people's understanding of how basic (and very old) self-replicating programs work and how they can be detected and stopped. What is more, I am hopeful that concepts on x64 Assembly and PE files are relevant take aways too in this repo.
+I am a beginner in this field, so do not hesitate to let me know if you find any issues. Thank you again for your interest!
