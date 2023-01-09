@@ -11,7 +11,7 @@
 
 This code must not be used to cause damage. The author is not responsible for its usage or damages caused as a consequence of its usage. **The goal of this repository is to explain how a basic PE-file infector works, as well as how it can be detected and stopped.**
 
-Bear in mind that although Alcatraz may crash at some point due to the fact that it's just not perfect (look Characteristics below), **running Alcatraz may cause harm to your system files.**
+Bear in mind that although Alcatraz may crash at some point due to the fact that it's just not perfect (look at Characteristics below), **running Alcatraz may cause harm to your system files.**
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
