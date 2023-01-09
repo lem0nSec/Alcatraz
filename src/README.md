@@ -21,40 +21,28 @@
 
 ## Introduction
 
-Win64.Alcatraz is a simple PE infector (virus - non-resident) which I developed to strenghten my Assembly programming skills, as well as the ability to manage the filesystem at usermode level. As part of this repo my goal is to explain a couple of concepts which stands from a Malware and Reverse Engineer perspectives respectively. The followings are central tenets of this repo:
-
-
-
+Alcatraz is a simple, local PE infector (virus - non-resident) which I developed to strenghten my Assembly programming skills and my understanding of PE files. The goal of this repository can summarized in the following key points:
 
 
 - What a malware infection looks like, and how to recognize an infected executable image;
 
-- How a basic Virus code can search for files and move throughout the filesystem, as well as how it can distinguish a specific class of files (64-bit .exe) from others
-
-
-
+- How a basic Virus code may search for files and infect them, as well as how a program doing this can be detected before execution.
 
 
 **What is a virus?**
-A virus is a self-replicating malware which spreads from one file to another. It often targets executable images, so that when they are run the infection process is triggered over and over again.
-
-
-
-
-
+A virus is a self-replicating malware which spreads from one file to another on the same system. Unlike worms, viruses are unable to move throughout a network.
 
 
 ## Explaining Alcatraz
 
-Alcatraz is a basic example of Malware Virus. It spreads amongst PE executables on the same system, replacing the original code with itself. Also bear in mind that since the executable's original code is scrapped with that of the virus, its functionalities are not preserved. Again, be careful on how you use this code!
-
+Alcatraz is a pretty rudimental example of Malware Virus. It spreads amongst PE executables on the same system, replacing their original code with itself. Also bear in mind that since the executable's original code is scrapped for that of the virus, its functionalities are not preserved. Again, be careful on how you use this code!
 
 
 ### Creating a Kernel32 Address Table
 
-This virus code is an independent shellcode that is able to run in any environment after selfinjection. This means that functions from Kernel32.dll cannot be resolved via load-time linking. Rather, Kernel32.dll addresses have to be retrieved dinamically during execution.
+This virus code is an independent shellcode that is able to run in any environment after its injection. This means that functions from dynamic librearies (es: Kernel32.dll) cannot be resolved via load-time linking. Rather, their addresses have to be retrieved dinamically during execution.
 
-What I name Kernel32AddressTable in the code is an allocation in the heap memory where these function addresses get stored once they are resolved. The virus code saves a pointer to Kernel32AddressTable in r15, so that calling a kernel32.dll function just comes down to making a call to r15 + an integer (es: call QWORD \[r15 + \<int\>\]).
+What I name *Kernel32AddressTable* is a sort of custom data structure allocated in the heap memory where these function addresses get stored once they are resolved. The virus code saves the Kernel32AddressTable address in r15, so that calling a kernel32.dll function just comes down to making a call to r15 + an integer (es: call QWORD \[r15 + \<int\>\]).
 
 
 
@@ -114,7 +102,7 @@ _getKernel32AddressTable:
 ```
 
 
-The \_prepareStoreAddress and \_storeAddress procedures are responsible for storing the resolved function address in Kernel32AddressTable.
+The \_prepareStoreAddress and \_storeAddress procedures are responsible for storing the resolved function addresses in Kernel32AddressTable.
 
 
 ```asm
@@ -126,7 +114,7 @@ _prepareStoreAddress:
 	mov   r9, rax 		        ; r9 contains the resolved function address
 	xor   r8, r8
 	mov   rdx, r8			        ; r8 and rdx are zeroed out
-	mov   rcx, r14		        ; rcx becomes a pointer to Kernel32AddressTable
+	mov   rcx, r14		        ; Kernel32AddressTable address is moved into rcx
 
 _storeAddress:
 	cmp   QWORD [ds:rcx + rdx], r8        ; verying if a given QWORD in Kernel32AddressTable is empty
@@ -146,7 +134,7 @@ _storeAddress_continueIncrement:
 
 ### Searching for Files
 
-Since this is a very basic example of PE infector, we will use standard Kernel32 file management APIs for finding valid PEs. APIs like CreateFileA, FindFirstFileA, and FindNextFileA are what we need. A pointer to WIN32\_FIND\_DATAA struct has to be passed to FindFirstFileA as second parameter. This data structure is first allocated in the heap memory with LocalAlloc by the \_allocate\_win32\_find\_dataa\_struct procedure, then passed to the function.
+Since this is a very basic example of PE infector, we will use well-known Kernel32 file management APIs (CreateFileA, FindFirstFileA, FindNextFileA) for finding valid PEs to inject into. A pointer to WIN32\_FIND\_DATAA struct has to be passed to FindFirstFileA as second parameter. This data structure is first allocated in the heap memory with LocalAlloc by the \_allocate\_win32\_find\_dataa\_struct procedure, then passed to the function.
 
 
 ```asm
@@ -169,13 +157,13 @@ _allocate_win32_find_dataa_struct:
 
 
 
-Calling FindFirstFileA and FindNextFileA is the easiest part. In my opinion, making the program go up and down directories was more challenging. This is because when the program goes down a directory and then comes back to the previous directory, it would restart enumerating files from the first one if the program state before changing directory is not saved. The 'program state' is just the parameters needed to enumerate files with FindNextFileA, namely a HANDLE and a WIN32\_FIND\_DATAA struct. Before explaining how this works, the program has to be smart as to what file out of the enumerated ones is a directory.
+Calling FindFirstFileA and FindNextFileA is the easiest part. However, making the program go up and down directories was more challenging. This is because when the program goes down a directory and then comes back to the previous directory, it would restart enumerating files from the first one if the program state before changing directory is not saved. Before explaining how this works, the program has to be smart as to what file out of the enumerated ones is a directory.
 
 
 
 #### Directory_mode vs File_mode
 
-Alcatraz can enumerate the content of directories in either 'Directory\_mode' or 'File\_mode', depending on whether it is searching for a PE executable or a directory to open up. The register r12 holds the value related to this. If r12 is set to 0, then directory\_mode is disabled. If r12 is set to 1, then the program is searching for directories. In practical terms, the program first enumerates all files in the current path (r12 set to 0). When FindNextFileA returns error (0), it means that all files have been checked and directory\_mode can be enabled.
+Alcatraz can enumerate the content of directories in either 'Directory\_mode' or 'File\_mode', depending on whether it is searching for a PE executable or a directory to open up. The register r12 holds the value related to this. If r12 is set to 0, then directory\_mode is disabled and Alcatraz is searching for files. If r12 is set to 1, then the program is searching for directories. In practical terms, the program first enumerates all files in the current path (r12 set to 0). When FindNextFileA returns error (0), it means that all files have been checked and directory\_mode can be enabled.
 
 
 ```asm
@@ -196,7 +184,7 @@ _findNextFile:
 ```
 
 
-When \_findNextFile brings the execution flow to the \_prepareChangeDirectory\_prepareExit procedure, r12 is zeroed out and incremented by one if it's not already. The WIN32\_FIND\_DATAA struct can be freed because FindNextFileA returns error only after all files in the current folder have been listed. Then the \_allocate\_win32\_find\_dataa\_struct procedure will make sure a new struct will be allocated in the heap. Whenever this struct gets populated, the file it contains will be checked in case it's a directory.
+When \_findNextFile brings the execution flow to the \_prepareChangeDirectory\_prepareExit procedure, r12 is zeroed out and incremented by one if it's not already. The WIN32\_FIND\_DATAA struct can be freed because all files in the current directory have been enumerated (remember that execution is here because FindNextFileA returned 0). Then the \_allocate\_win32\_find\_dataa\_struct procedure will make sure a new struct will be allocated in the heap. Whenever this struct gets populated, the file it contains will be checked in case it's a directory.
 
 
 ```asm
@@ -218,7 +206,7 @@ _prepareChangeDirectory_prepareExit:
 ```
 
 
-When a new WIN32\_FIND\_DATAA struct is allocated in the heap with r12 set to 1, the last two instructions of \_findNextFile make sure the execution flow is passed to the \_changeDirectory procedure. The related instruction set verifies whether the enumerated object is a file or a directory. It first checks whether the object is '.' or '..' by calling \_verifyDot. In case there is a match, the object is discarded. \[r14 + 44\] is a pointer to WIN32\_FIND\_DATAA-\>cFileName. If \[r14 + 44\] is equal to the WORD (4 bytes) 0x2E2E ('..') the object gets discarded. Similarly, if adding the BYTE \[r14 + 44\] to \[r14 + 45\] is equal to 0x2E, it means that the object is '.' and can be discarded too.
+When a new WIN32\_FIND\_DATAA struct is allocated in the heap with r12 set to 1, the last two instructions of \_findNextFile make sure the execution flow is passed to the \_changeDirectory procedure. The related instruction set verifies whether the enumerated object is a file or a directory. It first checks whether the object is '.' or '..' by calling \_verifyDot. In case there is a match, the object is discarded.
 
 
 ```asm
@@ -264,14 +252,14 @@ _returnError:
 ```
 
 
-With that being done, the \_changeDirectory procedure recognizes a valid directory by comparing the SetCurrentDirectoryA return value with 0 (error). If the WINAPI returns 0, it means that \[r14 + 44\] was not a valid directory (or we don't have permission to access it) and the program jumps back to \_findNextFile. If the function returns 1, the program is in the new directory. The last two instructions of \_changeDirectory are responsible for decrementing r12 by one (turn File\_mode back on) and reallocating a new WIN32\_FIND\_DATAA struct to search for files in the new path.
+The \_changeDirectory procedure recognizes a valid directory by comparing the SetCurrentDirectoryA return value with 0 (error). If the function returns 0, it means that \[r14 + 44\] was not a valid directory (or we don't have permissions to access it) and the program jumps back to \_findNextFile. If the function returns 1, the program is in the new directory. The last two instructions of \_changeDirectory are responsible for decrementing r12 by one (turn File\_mode back on) and reallocating a new WIN32\_FIND\_DATAA struct to search for files in the new path.
 
 With that being said, what does 'mov r11, QWORD \[ss:rsp + 104\] does'?
 
 
 #### Storing and restoring 'Directory_state'
 
-When the program goes down a directory and finds no valid PEs or folders in it, then it goes back up. However, how does it retrieve the enumeration state of the previous directory, thus avoiding renumerating all files from the beginning? Storing the 'directory state' means storing the values used to define it. To put it simply, the enumeration of a directory depends on the parameters passed to FindFirstFileA and FindNextFileA. These parameters are a HANDLE and the WIN32\_FIND\_DATAA struct. If the programs needs to save the enumeration state for a directory, it has to store these two values somewhere so that it can remember the state as soon as the HANDLE and the WIN32\_FIND\_DATAA struct are retrieved back. Alcatraz saves this data as a QWORD pair in the heap memory. The following snippet within the \_begin procedure allocates 400 bytes in the heap, then saves the pointer on to stack at position rsp + 104. As the directory\_state for one directory is represented by two QWORDS values (HANDLE and WIN32\_FIND\_DATAA), a single directory\_state is a 16-byte value. A 400-byte allocation make sure the program is able to enumerate up to 25 directories deep and safely retrieve the related directory\_states. 
+When the program goes down a directory and finds no valid PEs or folders in it, then it goes back up. However, how does it retrieve the enumeration state of the previous directory, thus avoiding renumerating all files from the beginning? Storing the 'directory state' means storing the values used to define it. To put it simply, the enumeration of a directory depends on the parameters passed to FindFirstFileA and FindNextFileA. These parameters are a HANDLE and a WIN32\_FIND\_DATAA struct. If the programs needs to save the enumeration state for a directory, it has to store these values somewhere so that it can remember the state as soon as the HANDLE and the WIN32\_FIND\_DATAA struct are retrieved back. Alcatraz saves this data as a QWORD pair in the heap memory. The following snippet shows how the \_begin procedure allocates 400 bytes in the heap, then saves the pointer on to stack at position rsp + 104. As the directory\_state for one directory is represented by two QWORDS values (HANDLE and WIN32\_FIND\_DATAA), a single directory\_state is a 16-byte value. A 400-byte allocation make sure the program is able to enumerate up to 25 directories deep and safely retrieve the related directory\_states.
 
 
 ```asm
@@ -315,7 +303,7 @@ _addRax:
 ```
 
 
-If a directory has been enumerated in both File\_mode and Directory\_mode, the execution is passed to the \_goBackDir procedure by \_prepareChangeDirectory\_prepareExit. \_goBackDir instructs the program to go up a directory by calling SetCurrentDirectoryA and passing '..' as parameter. If the function succeds (rax == 1), the Directory\_state of the previous folder is restored by calling \_retrieveDirectoryData. This procedure expects to find r13 and r14 set to zero, as these registers will be populated with the HANDLE and the WIN32\_FIND\_DATAA struct of the previous folder (previous folder's Directory\_state). Similarly, r11 has to be a pointer to DirectoryData\_storage and rax must be equal to the size of it.
+If a directory has been enumerated in both File\_mode and Directory\_mode, the execution is passed to the \_goBackDir procedure by \_prepareChangeDirectory\_prepareExit. \_goBackDir tells the program to go up a directory by calling SetCurrentDirectoryA and passing '..' as parameter. If the function succeds (rax == 1), the Directory\_state of the previous folder is restored by calling \_retrieveDirectoryData. This procedure expects to find r13 and r14 set to zero, as these registers will be populated with the HANDLE and the WIN32\_FIND\_DATAA struct of the previous folder (previous folder's Directory\_state). Similarly, r11 has to be a pointer to DirectoryData\_storage and rax must be equal to the size of it.
 
 
 ```asm
@@ -340,7 +328,7 @@ _goBackDir:
 ```
 
 
-The \_retrieveDirectoryData procedure does the opposite of what \_storeDirectoryData did. DirectoryData\_storage gets checked 16 bytes at the time starting from the end of it. This is the reason why rax is equal to the size of this allocation space. The register gets decremented by 16 bytes until the first HANDLE + WIN32\_FIND\_DATAA pair is found. Then r13 and r14 (0) are exchanged with the QWORDS pair, so that the previously occupied 16 bytes in DirectoryData\_storage are zeroed out and r13 and r14 contain the HANDLE and the WIN32\_FIND\_DATAA struct respectively. Then execution returns to \_goBackDir, which jumps back to \_findNextFile. \_findNextFile can now enumerate the remaining files in the directory starting from where it left off.
+The \_retrieveDirectoryData procedure does the opposite of what \_storeDirectoryData did. DirectoryData\_storage gets checked 16 bytes at the time starting from the end of it. The register gets decremented by 16 bytes until the first HANDLE + WIN32\_FIND\_DATAA pair is found. Then r13 and r14 (0) are exchanged with the QWORDS pair, so that the previously occupied 16 bytes in DirectoryData\_storage are zeroed out and r13 and r14 contain the HANDLE and the WIN32\_FIND\_DATAA struct respectively. Finally, execution returns to \_goBackDir, which jumps back to \_findNextFile. \_findNextFile can now enumerate the remaining files in the directory starting from where it left off.
 
 
 ```asm
@@ -367,9 +355,9 @@ _subRax:
 
 NB:
 
-- This method of storing the 'Directory\_state' works while Alcatraz searches for files starting from C:\\. So when execution completes the enumeration of C:\\ and tries to go back a directory, SetCurrentDirectoryA fails and program exits due to the instructions 'cmp rax, 0' and 'jz \_clearAndTerminate' in \_goBackDir.
+- This method of storing the 'Directory\_state' works while Alcatraz searches for files starting from C:\\. So when execution completes the enumeration of C:\\ and tries to go back a directory, SetCurrentDirectoryA fails and the program exits due to the instructions 'cmp rax, 0' and 'jz \_clearAndTerminate' in \_goBackDir. Bear in mind that changing the *dir* string at the beginning of the code is highly likely to make the program crash after a few seconds.
 
-- There is probably no need to consider a WIN32\_FIND\_DATAA as part of the Directory\_state. This is because it is more likely that only the HANDLE is used to keep track of the enumeration progress. A struct is just a series of bytes that gets populated.
+- There is probably no need to consider a WIN32\_FIND\_DATAA struct as part of the Directory\_state. This is because it is more likely that only the HANDLE is used to keep track of the enumeration progress.
 
 
 ### Identifying a valid 64bit executable image
@@ -519,7 +507,7 @@ _copyShellcode1:
 ```
 
 
-**IMPORTANT:** Tests have shown that this infection method is not really deterministic. It seems that the address of the entrypoint changes as the executable gets loaded in memory. As a result, some programs just execute nops in the .text section rather than the Alcatraz code. In any case, the infected program will not work as in its original state. This issue might be related to the code or the operating system itself. Below are two screenshots of an infected calc.exe application behaviour in Windows 11 and Windows 10 respectively. The application successfully runs Alcatraz code in Windows 11, whereas x64dbg on Windows 10 even fails at loading it (Invalid PE file).
+**IMPORTANT:** Tests have shown that this injection method is not really deterministic. It seems that the address of the entrypoint changes as the executable gets loaded in memory. As a result, some programs just execute nops in the .text section rather than the Alcatraz code. In any case, the infected program will not work as in its original state. This issue might be related to the code or the operating system itself. Below are two screenshots of an infected calc.exe application behaviour in Windows 11 and Windows 10 respectively. The application successfully runs Alcatraz code in Windows 11, whereas x64dbg on Windows 10 even fails at loading it (Invalid PE file).
 
 
 ![calc.exe executes Alcatraz code in Windows 11](../pictures/calc_entrypoint.png)
@@ -539,7 +527,7 @@ After the self-replication phase is complete, the HANDLE to the file used for re
 ## Detecting Alcatraz
 Alcatraz is detected by most AVs heuristic analyses. Microsoft Defender flags it with the !ML suffix which stands for 'Machine Learning'. Others use the name '\[HEUR\]' to specify that detection was based on an heuristic approach. That said, using this methods is often said to leave room to false positives. That's why I tried writing a YARA rule for the very first time.
 
-Writing an effective YARA rule boils down to understanding most salient parts of the code. Those parts that make a binary stick out and that are unlikely to change. Below is a picture showing what the padded .text section looks like, along with the 'alca' signature.
+Writing an effective YARA rule boils down to understanding the most salient parts of the code. Those parts that make a binary stick out and are unlikely to change. Below is a picture showing what the padded .text section looks like in a victim file.
 
 
 ![New .text section](../pictures/hxd2.png)
@@ -565,5 +553,4 @@ condition:
 
 
 ## Final Remarks
-Thank you very much for your interest in this repository. I hope this work can give a modest contribute to the people's understanding of how basic (and very old) self-replicating programs work and how they can be detected and stopped. What is more, I am hopeful that concepts on x64 Assembly and PE files are relevant take aways too in this repo.
-I am a beginner in this field, so do not hesitate to let me know if you find any issues. Thank you again for your interest!
+Thank you very much for your interest in this repository. I hope this work can give a modest contribute to your understanding of how a basic and rudimental self-replicating program work and how it can be detected and stopped. What is more, I am hopeful that you can benefit from the Assembly and PE concepts addressed in this repository. I am a beginner in this field, so do not hesitate to let me know if you find any issues. Thank you again for your interest!
