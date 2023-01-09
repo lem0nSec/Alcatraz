@@ -40,7 +40,7 @@ Alcatraz is a pretty rudimental example of Malware Virus. It spreads amongst PE 
 
 ### Creating a Kernel32 Address Table
 
-This virus code is an independent shellcode that is able to run in any environment after its injection. This means that functions from dynamic librearies (es: Kernel32.dll) cannot be resolved via load-time linking. Rather, their addresses have to be retrieved dinamically during execution.
+This virus code is an independent shellcode that is able to run in any environment after its injection. This means that functions from dynamic libraries (es: Kernel32.dll) cannot be resolved via load-time linking. Rather, their addresses have to be retrieved dinamically during execution.
 
 What I name *Kernel32AddressTable* is a sort of custom data structure allocated in the heap memory where these function addresses get stored once they are resolved. The virus code saves the Kernel32AddressTable address in r15, so that calling a kernel32.dll function just comes down to making a call to r15 + an integer (es: call QWORD \[r15 + \<int\>\]).
 
