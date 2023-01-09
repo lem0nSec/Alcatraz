@@ -3,7 +3,7 @@
 
 :dart: Alcatraz is a basic **self-replicating Virus** I developed for educational and academic purposes. 
 
-:hammer: I always wanted to create an 'old-school' program in pure Assembly, and here's the code!
+:hammer: I always wanted to create an 'old-school' program in pure Assembly, so here's the code!
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
