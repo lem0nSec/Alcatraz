@@ -537,7 +537,7 @@ After the self-replication phase is complete, the HANDLE to the file used for re
 
 
 ## Detecting Alcatraz
-Alcatraz is very easy by most AVs heuristic analyses. Microsoft Defender flags it with !ML suffix which stands for 'Machine Learning'. Others use the name '\[HEUR\]' to specify that detection was based on an heuristic approach. That said, using this approach is often said to leave room to false positives. That's why I tried writing a YARA rule for the very first time.
+Alcatraz is detected by most AVs heuristic analyses. Microsoft Defender flags it with the !ML suffix which stands for 'Machine Learning'. Others use the name '\[HEUR\]' to specify that detection was based on an heuristic approach. That said, using this methods is often said to leave room to false positives. That's why I tried writing a YARA rule for the very first time.
 
 Writing an effective YARA rule boils down to understanding most salient parts of the code. Those parts that make a binary stick out and that are unlikely to change. Below is a picture showing what the padded .text section looks like, along with the 'alca' signature.
 
