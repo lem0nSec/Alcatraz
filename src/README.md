@@ -254,7 +254,7 @@ _returnError:
 
 The \_changeDirectory procedure recognizes a valid directory by comparing the SetCurrentDirectoryA return value with 0 (error). If the function returns 0, it means that \[r14 + 44\] was not a valid directory (or we don't have permissions to access it) and the program jumps back to \_findNextFile. If the function returns 1, the program is in the new directory. The last two instructions of \_changeDirectory are responsible for decrementing r12 by one (turn File\_mode back on) and reallocating a new WIN32\_FIND\_DATAA struct to search for files in the new path.
 
-With that being said, what does 'mov r11, QWORD \[ss:rsp + 104\] does'?
+With that being said, what does 'mov r11, QWORD \[ss:rsp + 104\] do'?
 
 
 #### Storing and restoring 'Directory_state'
