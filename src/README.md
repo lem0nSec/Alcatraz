@@ -65,7 +65,7 @@ What I name *Kernel32AddressTable* is a sort of custom data structure allocated 
 
 
 
-Alcatraz calls LocalAlloc to reserve space for kernel32AddressTable in the heap. 104 bytes are initialized to zero because the number of function addresses will be 13 (each function is a QWORD, so 8\*13 = 104). Before calling LocalAlloc, the GetProcAddress address is retrieved by manually parsing the Kernel32.dll IMAGE\_DATA\_EXPORT\_DIRECTORY (credit goes to Dennis Babkin from this original blogpost https://dennisbabkin.com/blog/?t=how-to-implement-getprocaddress-in-shellcode for how to dinamycally resolve GetProcAddress). Then the address of each kernel32AddressTable entry (including LocalAlloc) is retrieved by calling GetProcAddress (stored in r13).
+Alcatraz calls LocalAlloc to reserve space for kernel32AddressTable. 104 bytes are initialized to zero because the number of function addresses will be 13 (each function is a QWORD, so 8\*13 = 104). Before calling LocalAlloc, the GetProcAddress address is retrieved by manually parsing the Kernel32.dll IMAGE\_DATA\_EXPORT\_DIRECTORY (credit goes to Dennis Babkin from this original blogpost https://dennisbabkin.com/blog/?t=how-to-implement-getprocaddress-in-shellcode for how to dinamycally resolve GetProcAddress). Then the address of each kernel32AddressTable entry (including LocalAlloc) is retrieved by calling GetProcAddress (stored in r13).
 
 
 
@@ -134,7 +134,7 @@ _storeAddress_continueIncrement:
 
 ### Searching for Files
 
-Since this is a very basic example of PE infector, we will use well-known Kernel32 file management APIs (CreateFileA, FindFirstFileA, FindNextFileA) for finding valid PEs to inject into. A pointer to WIN32\_FIND\_DATAA struct has to be passed to FindFirstFileA as second parameter. This data structure is first allocated in the heap memory with LocalAlloc by the \_allocate\_win32\_find\_dataa\_struct procedure, then passed to the function.
+Since this is a very basic example of PE infector, we will use well-known Kernel32 file management APIs (CreateFileA, FindFirstFileA, FindNextFileA) for finding valid PEs to inject into. A pointer to WIN32\_FIND\_DATAA struct has to be passed to FindFirstFileA as second parameter. This data structure is first allocated with LocalAlloc by the \_allocate\_win32\_find\_dataa\_struct procedure, then passed to the function.
 
 
 ```asm
@@ -157,7 +157,7 @@ _allocate_win32_find_dataa_struct:
 
 
 
-Calling FindFirstFileA and FindNextFileA is the easiest part. However, making the program go up and down directories was more challenging. This is because when the program goes down a directory and then comes back to the previous directory, it would restart enumerating files from the first one if the program state before changing directory is not saved. Before explaining how this works, the program has to be smart as to what file out of the enumerated ones is a directory.
+Calling FindFirstFileA and FindNextFileA is the easiest part. In contrast, making the program go up and down directories was more challenging. This is because when the program goes down a directory and then comes back to the previous directory, it would restart enumerating files from the first one if the program state before changing directory is not saved. Before explaining how this works, the program has to be smart as to what file out of the enumerated ones is a directory.
 
 
 
@@ -206,7 +206,7 @@ _prepareChangeDirectory_prepareExit:
 ```
 
 
-When a new WIN32\_FIND\_DATAA struct is allocated in the heap with r12 set to 1, the last two instructions of \_findNextFile make sure the execution flow is passed to the \_changeDirectory procedure. The related instruction set verifies whether the enumerated object is a file or a directory. It first checks whether the object is '.' or '..' by calling \_verifyDot. In case there is a match, the object is discarded.
+When a new WIN32\_FIND\_DATAA struct is allocated with r12 set to 1, the last two instructions of \_findNextFile make sure the execution flow is passed to the \_changeDirectory procedure. The related instruction set verifies whether the enumerated object is a file or a directory. It first checks whether the object is '.' or '..' by calling \_verifyDot. In case there is a match, the object is discarded.
 
 
 ```asm
@@ -259,7 +259,7 @@ With that being said, what does 'mov r11, QWORD \[ss:rsp + 104\] do'?
 
 #### Storing and restoring 'Directory_state'
 
-When the program goes down a directory and finds no valid PEs or folders in it, then it goes back up. However, how does it retrieve the enumeration state of the previous directory, thus avoiding renumerating all files from the beginning? Storing the 'directory state' means storing the values used to define it. To put it simply, the enumeration of a directory depends on the parameters passed to FindFirstFileA and FindNextFileA. These parameters are a HANDLE and a WIN32\_FIND\_DATAA struct. If the programs needs to save the enumeration state for a directory, it has to store these values somewhere so that it can remember the state as soon as the HANDLE and the WIN32\_FIND\_DATAA struct are retrieved back. Alcatraz saves this data as a QWORD pair in the heap memory. The following snippet shows how the \_begin procedure allocates 400 bytes in the heap, then saves the pointer on to stack at position rsp + 104. As the directory\_state for one directory is represented by two QWORDS values (HANDLE and WIN32\_FIND\_DATAA), a single directory\_state is a 16-byte value. A 400-byte allocation make sure the program is able to enumerate up to 25 directories deep and safely retrieve the related directory\_states.
+When the program goes down a directory and finds no valid PEs or folders in it, then it goes back up. However, how does it retrieve the enumeration state of the previous directory, thus avoiding renumerating all files from the beginning? Storing the 'directory state' means storing the values used to define it. To put it simply, the enumeration of a directory depends on the parameters passed to FindFirstFileA and FindNextFileA. These parameters are a HANDLE and a WIN32\_FIND\_DATAA struct. If the programs needs to save the enumeration state for a directory, it has to store these values somewhere so that it can remember the state as soon as the HANDLE and the WIN32\_FIND\_DATAA struct are retrieved back. Alcatraz saves this data as a QWORD pair from the heap. The following snippet shows how the \_begin procedure allocates 400 bytes from the heap, then saves the pointer on to stack at position rsp + 104. As the directory\_state for one directory is represented by two QWORDS values (HANDLE and WIN32\_FIND\_DATAA), a single directory\_state is a 16-byte value. A 400-byte allocation make sure the program is able to enumerate up to 25 directories deep and safely retrieve the related directory\_states.
 
 
 ```asm
@@ -361,7 +361,7 @@ NB:
 
 
 ### Identifying a valid 64bit executable image
-Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its size, then it allocates a memory space in the heap where the file content is read. Clearly, the size of the allocation is equal to the size of the file. So the function will be LocalAlloc(LPTR, sizeof(file)). The program can now check if the file meets the following 64bit .exe criteria:
+Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its size, then it allocates some memory with LocalAlloc to read the file content. Clearly, the size of the allocation is equal to the size of the file. So the function will be LocalAlloc(LPTR, sizeof(file)). The program can now check if the file meets the following 64bit .exe criteria:
 
 - The first WORD must be equal to 0x5A4D ('MZ')
 
@@ -454,7 +454,7 @@ Whenever Alcatraz opens a HANDLE to a file with CreateFileA, it calculates its s
 
 
 ### The Infection Process
-After finding a valid .exe to inject into, Alcatraz gets a pointer to the target .text section. The first DWORD of the section is overwritten with the value 0x61636C61 ('alca'). The rest of the section is padded with nops (0x90). Then the IMAGE\_OPTIONAL\_HEADER of the target is parsed until the value of the entrypoint is found. This value is added to the base address of the target in the heap and Alcatraz copies itself past that address. As a result, when the target program is launched, it "allegedly" starts executing the Alcatraz code rather than its own.
+After finding a valid .exe to inject into, Alcatraz gets a pointer to the target .text section. The first DWORD of the section is overwritten with the value 0x61636C61 ('alca'). The rest of the section is padded with nops (0x90). Then the IMAGE\_OPTIONAL\_HEADER of the target is parsed until the value of the entrypoint is found. This value is added to the base address of the target in the local allocation and Alcatraz copies itself past that address. As a result, when the target program is launched, it "allegedly" starts executing the Alcatraz code rather than its own.
 
 
 ```asm
