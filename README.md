@@ -16,7 +16,7 @@ Bear in mind that although Alcatraz may crash at some point due to the fact that
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Wiki
-A detailed explanation of the most salient parts of this code can be found in the [src](https://github.com/lem0nSec/Alcatraz/tree/main/src) directory.
+A detailed description of the most salient parts of this code can be found in the [src](https://github.com/lem0nSec/Alcatraz/tree/main/src) directory.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
