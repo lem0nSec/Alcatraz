@@ -1,6 +1,7 @@
-; Author: Angelo Frasca Caccia (lem0nSec_)
-; Date: 04/01/2023
-; Title: Win64.Alcatraz - A simple PE-file infector to explain how self-replicating code works
+; Author:	Angelo Frasca Caccia (lem0nSec_)
+; Date: 	04/01/2023
+; Title: 	Win64.Alcatraz.asm - A simple PE-file infector to explain how self-replicating code works
+; Website:	https://github.com/lem0nSec/Alcatraz
 
 
 
